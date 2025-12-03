@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - Zakcom{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold text-zakcom-blue mb-2">
+            <i class="fas fa-users-cog text-zakcom-orange mr-2"></i>
+            User Management
+        </h1>
+        <p class="text-gray-600">Manage sales team members and administrators</p>
+    </div>
+    <a href="{% url 'create_user' %}" class="px-6 py-3 bg-gradient-to-r from-zakcom-orange to-orange-500 text-white rounded-lg hover:shadow-lg transition transform hover:scale-105">
+        <i class="fas fa-user-plus mr-2"></i>Add New User
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- User Statistics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-zakcom-blue to-zakcom-light-blue rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-sm opacity-80 mb-2">Total Users</h3>
+        <p class="text-4xl font-bold">{{ users.count }}</p>
+    </div>
+    <div class="bg-gradient-to-br from-zakcom-orange to-orange-500 rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-sm opacity-80 mb-2">Administrators</h3>
+        <p class="text-4xl font-bold">{{ admin_count }}</p>
+    </div>
+    <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-sm opacity-80 mb-2">Sales Team</h3>
+        <p class="text-4xl font-bold">{{ sales_count }}</p>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue text-white">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Role</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sales</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Visits</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Joined</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for user in users %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="bg-zakcom-blue text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mr-3">
+                                {{ user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ user.get_full_name|default:user.username }}
+                                </div>
+                                <div class="text-sm text-gray-500">@{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ user.email }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if user.is_superuser %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                            <i class="fas fa-crown mr-1"></i>Super Admin
+                        </span>
+                        {% elif user.is_staff %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-zakcom-orange bg-opacity-20 text-zakcom-orange">
+                            <i class="fas fa-user-shield mr-1"></i>Administrator
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            <i class="fas fa-user mr-1"></i>Sales Person
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if user.is_active %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>Active
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                            <i class="fas fa-ban mr-1"></i>Inactive
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ user.total_sales }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ user.total_visits }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ user.date_joined|date:"M d, Y" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{% url 'edit_user' user.id %}" class="text-zakcom-blue hover:text-zakcom-light-blue mr-3">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% if not user.is_superuser %}
+                        <a href="{% url 'delete_user' user.id %}" class="text-red-600 hover:text-red-800" onclick="return confirm('Are you sure you want to delete this user?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500">No users found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

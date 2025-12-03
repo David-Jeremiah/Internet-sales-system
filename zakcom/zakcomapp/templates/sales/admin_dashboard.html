@@ -1,0 +1,429 @@
+<!-- templates/sales/admin_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Zakcom{% endblock %}
+
+{% block extra_css %}
+<style>
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-zakcom-blue mb-2">
+        <i class="fas fa-chart-bar text-zakcom-orange mr-2"></i>
+        Admin Dashboard
+    </h1>
+    <p class="text-gray-600">Overview of sales performance and team activities</p>
+</div>
+
+<!-- Overall Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-zakcom-blue to-zakcom-light-blue rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm opacity-80 mb-1">Total Sales</p>
+                <p class="text-4xl font-bold">{{ total_sales }}</p>
+                <p class="text-xs mt-2 opacity-70">{{ monthly_sales }} this month</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-full p-4">
+                <i class="fas fa-chart-line text-4xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-zakcom-orange to-orange-500 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm opacity-80 mb-1">Total Revenue</p>
+                <p class="text-3xl font-bold">{{ total_revenue|floatformat:0|default:"0" }}</p>
+                <p class="text-xs mt-2 opacity-70">{{ monthly_revenue|floatformat:0 }} this month</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-full p-4">
+                <i class="fas fa-money-bill-wave text-4xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm opacity-80 mb-1">Total Visits</p>
+                <p class="text-4xl font-bold">{{ total_visits }}</p>
+                <p class="text-xs mt-2 opacity-70">{{ monthly_visits }} this month</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-full p-4">
+                <i class="fas fa-walking text-4xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm opacity-80 mb-1">Conversion Rate</p>
+                <p class="text-4xl font-bold">{{ overall_conversion }}%</p>
+                <p class="text-xs mt-2 opacity-70">Visits to Sales</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-full p-4">
+                <i class="fas fa-percentage text-4xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Sales Trend Chart -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-zakcom-blue mb-4">
+            <i class="fas fa-chart-area text-zakcom-orange mr-2"></i>
+            Sales & Visits Trend (Last 30 Days)
+        </h2>
+        <div class="chart-container">
+            <canvas id="salesTrendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Sales by Status -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-zakcom-blue mb-4">
+            <i class="fas fa-tasks text-zakcom-orange mr-2"></i>
+            Sales by Status
+        </h2>
+        <div class="chart-container">
+            <canvas id="salesStatusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Visit Outcomes -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-zakcom-blue mb-4">
+            <i class="fas fa-chart-pie text-zakcom-orange mr-2"></i>
+            Visit Outcomes
+        </h2>
+        <div class="chart-container">
+            <canvas id="visitOutcomesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Package Performance -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-zakcom-blue mb-4">
+            <i class="fas fa-wifi text-zakcom-orange mr-2"></i>
+            Sales by Package
+        </h2>
+        <div class="chart-container">
+            <canvas id="packageChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Common Objections -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <h2 class="text-xl font-bold text-zakcom-blue mb-4">
+        <i class="fas fa-exclamation-triangle text-zakcom-orange mr-2"></i>
+        Common Customer Objections
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Price Concerns</p>
+                    <p class="text-3xl font-bold text-red-600">{{ common_objections.price }}</p>
+                </div>
+                <i class="fas fa-dollar-sign text-3xl text-red-400"></i>
+            </div>
+        </div>
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Coverage Concerns</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ common_objections.coverage }}</p>
+                </div>
+                <i class="fas fa-signal text-3xl text-yellow-400"></i>
+            </div>
+        </div>
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Has Existing Provider</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ common_objections.existing_provider }}</p>
+                </div>
+                <i class="fas fa-handshake text-3xl text-blue-400"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Performers -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-zakcom-blue">
+            <i class="fas fa-trophy text-zakcom-orange mr-2"></i>
+            Top Performers This Month
+        </h2>
+        <a href="{% url 'team_performance' %}" class="text-zakcom-blue hover:text-zakcom-orange text-sm font-medium">View Full Team →</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue text-white">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rank</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sales Person</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sales</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Revenue</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Visits</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Conversion</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for performer in top_performers %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if forloop.counter == 1 %}
+                        <span class="text-2xl">🥇</span>
+                        {% elif forloop.counter == 2 %}
+                        <span class="text-2xl">🥈</span>
+                        {% elif forloop.counter == 3 %}
+                        <span class="text-2xl">🥉</span>
+                        {% else %}
+                        <span class="text-gray-500 font-medium">#{{ forloop.counter }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="bg-zakcom-blue text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mr-3">
+                                {{ performer.username|slice:":1"|upper }}
+                            </div>
+                            <div class="text-sm font-medium text-gray-900">{{ performer.get_full_name|default:performer.username }}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-bold text-zakcom-blue">{{ performer.sales_count }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-zakcom-orange">UGX {{ performer.revenue|floatformat:0|default:"0" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-700">{{ performer.visits_count }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-green-600">{{ performer.conversion_rate|floatformat:1|default:"0" }}%</div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No sales data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <a href="{% url 'team_performance' %}" class="bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue hover:shadow-xl text-white rounded-lg p-6 text-center transform hover:scale-105 transition">
+        <i class="fas fa-users text-3xl mb-3"></i>
+        <h3 class="text-lg font-bold">Team Performance</h3>
+    </a>
+    <a href="{% url 'feedback_analysis' %}" class="bg-gradient-to-r from-zakcom-orange to-orange-500 hover:shadow-xl text-white rounded-lg p-6 text-center transform hover:scale-105 transition">
+        <i class="fas fa-comments text-3xl mb-3"></i>
+        <h3 class="text-lg font-bold">Customer Feedback</h3>
+    </a>
+    <a href="{% url 'visit_list' %}" class="bg-gradient-to-r from-green-500 to-green-700 hover:shadow-xl text-white rounded-lg p-6 text-center transform hover:scale-105 transition">
+        <i class="fas fa-list text-3xl mb-3"></i>
+        <h3 class="text-lg font-bold">All Visits</h3>
+    </a>
+    <a href="{% url 'sale_list' %}" class="bg-gradient-to-r from-purple-500 to-purple-700 hover:shadow-xl text-white rounded-lg p-6 text-center transform hover:scale-105 transition">
+        <i class="fas fa-file-invoice-dollar text-3xl mb-3"></i>
+        <h3 class="text-lg font-bold">All Sales</h3>
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+console.log('Daily Activity Data:', [
+    {% for activity in daily_activity %}
+        {date: '{{ activity.date|date:"M d" }}', sales: {{ activity.sales }}, visits: {{ activity.visits }}},
+    {% endfor %}
+]);
+
+// Sales Trend Chart
+const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+new Chart(salesTrendCtx, {
+    type: 'line',
+    data: {
+        labels: [
+            {% for activity in daily_activity %}
+                '{{ activity.date|date:"M d" }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Sales',
+            data: [
+                {% for activity in daily_activity %}
+                    {{ activity.sales }},
+                {% endfor %}
+            ],
+            borderColor: '#FF6B35',
+            backgroundColor: 'rgba(255, 107, 53, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Visits',
+            data: [
+                {% for activity in daily_activity %}
+                    {{ activity.visits }},
+                {% endfor %}
+            ],
+            borderColor: '#004E89',
+            backgroundColor: 'rgba(0, 78, 137, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Sales Status Chart
+const salesStatusCtx = document.getElementById('salesStatusChart').getContext('2d');
+new Chart(salesStatusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for status in status_breakdown %}
+                '{{ status.status|title }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for status in status_breakdown %}
+                    {{ status.count }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                '#004E89',
+                '#FF6B35',
+                '#22C55E',
+                '#A855F7',
+                '#EF4444'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+
+// Visit Outcomes Chart
+const visitOutcomesCtx = document.getElementById('visitOutcomesChart').getContext('2d');
+new Chart(visitOutcomesCtx, {
+    type: 'pie',
+    data: {
+        labels: [
+            {% for outcome in outcome_breakdown %}
+                '{{ outcome.outcome|title }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for outcome in outcome_breakdown %}
+                    {{ outcome.count }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                '#22C55E',
+                '#EF4444',
+                '#FF6B35',
+                '#004E89',
+                '#A855F7',
+                '#6B7280'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+
+// Package Performance Chart
+const packageCtx = document.getElementById('packageChart').getContext('2d');
+new Chart(packageCtx, {
+    type: 'bar',
+    data: {
+        labels: [
+            {% for pkg in package_stats %}
+                '{{ pkg.package__name }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Number of Sales',
+            data: [
+                {% for pkg in package_stats %}
+                    {{ pkg.count }},
+                {% endfor %}
+            ],
+            backgroundColor: '#004E89'
+        }, {
+            label: 'Revenue (in thousands)',
+            data: [
+                {% for pkg in package_stats %}
+                    {{ pkg.revenue|default:0|floatformat:0|slice:":-3" }},
+                {% endfor %}
+            ],
+            backgroundColor: '#FF6B35'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

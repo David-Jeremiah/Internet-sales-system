@@ -1,0 +1,275 @@
+<!-- templates/sales/sales_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}My Dashboard - Zakcom{% endblock %}
+
+{% block content %}
+<!-- Header with Profile -->
+<div class="mb-6 sm:mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-zakcom-blue mb-2">
+                <i class="fas fa-chart-line text-zakcom-orange mr-2"></i>
+                Welcome, {{ user.get_full_name|default:user.username }}!
+            </h1>
+            <p class="text-sm sm:text-base text-gray-600">Here's your sales performance overview</p>
+        </div>
+        <a href="{% url 'edit_profile' %}" class="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue text-white rounded-lg hover:shadow-lg transition text-center">
+            <i class="fas fa-user-edit mr-2"></i>Edit Profile
+        </a>
+    </div>
+</div>
+
+<!-- Stats Grid - Mobile Optimized -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+    <!-- Monthly Sales -->
+    <div class="bg-gradient-to-br from-zakcom-blue to-zakcom-light-blue rounded-lg shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition">
+        <div class="flex flex-col">
+            <p class="text-xs sm:text-sm opacity-80 mb-1">Monthly Sales</p>
+            <p class="text-2xl sm:text-3xl font-bold mb-1">{{ monthly_sales }}</p>
+            <p class="text-xs opacity-70">Total: {{ total_sales }}</p>
+        </div>
+        <div class="mt-2">
+            <i class="fas fa-trophy text-xl sm:text-2xl opacity-50"></i>
+        </div>
+    </div>
+
+    <!-- Monthly Revenue -->
+    <div class="bg-gradient-to-br from-zakcom-orange to-orange-500 rounded-lg shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition">
+        <div class="flex flex-col">
+            <p class="text-xs sm:text-sm opacity-80 mb-1">Revenue</p>
+            <p class="text-xl sm:text-2xl font-bold mb-1">UGX {{ monthly_revenue|floatformat:0|default:"0"|slice:":6" }}...</p>
+            <p class="text-xs opacity-70">This month</p>
+        </div>
+        <div class="mt-2">
+            <i class="fas fa-dollar-sign text-xl sm:text-2xl opacity-50"></i>
+        </div>
+    </div>
+
+    <!-- Monthly Visits -->
+    <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition">
+        <div class="flex flex-col">
+            <p class="text-xs sm:text-sm opacity-80 mb-1">Visits</p>
+            <p class="text-2xl sm:text-3xl font-bold mb-1">{{ monthly_visits }}</p>
+            <p class="text-xs opacity-70">Total: {{ total_visits }}</p>
+        </div>
+        <div class="mt-2">
+            <i class="fas fa-walking text-xl sm:text-2xl opacity-50"></i>
+        </div>
+    </div>
+
+    <!-- Conversion Rate -->
+    <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition">
+        <div class="flex flex-col">
+            <p class="text-xs sm:text-sm opacity-80 mb-1">Conversion</p>
+            <p class="text-2xl sm:text-3xl font-bold mb-1">{{ conversion_rate }}%</p>
+            <p class="text-xs opacity-70">Visit to Sale</p>
+        </div>
+        <div class="mt-2">
+            <i class="fas fa-percentage text-xl sm:text-2xl opacity-50"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Target Progress - Mobile Optimized -->
+{% if target %}
+<div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+    <h2 class="text-lg sm:text-xl font-bold text-zakcom-blue mb-4 flex items-center">
+        <i class="fas fa-bullseye text-zakcom-orange mr-2"></i>
+        Monthly Targets
+    </h2>
+    <div class="space-y-4">
+        <!-- Sales Target -->
+        <div>
+            <div class="flex justify-between mb-2 text-sm sm:text-base">
+                <span class="font-medium text-gray-700">Sales Target</span>
+                <span class="font-bold text-zakcom-blue">{{ monthly_sales }}/{{ target.target_count }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+                <div class="bg-gradient-to-r from-zakcom-blue to-zakcom-orange h-2 sm:h-3 rounded-full transition-all" style="width: {% widthratio monthly_sales target.target_count 100 %}%"></div>
+            </div>
+        </div>
+
+        <!-- Revenue Target -->
+        <div>
+            <div class="flex justify-between mb-2 text-sm sm:text-base">
+                <span class="font-medium text-gray-700">Revenue Target</span>
+                <span class="font-bold text-zakcom-orange">{{ monthly_revenue|floatformat:0 }}/{{ target.target_amount }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+                <div class="bg-gradient-to-r from-zakcom-orange to-orange-600 h-2 sm:h-3 rounded-full transition-all" style="width: {% widthratio monthly_revenue target.target_amount 100 %}%"></div>
+            </div>
+        </div>
+
+        <!-- Visits Target -->
+        <div>
+            <div class="flex justify-between mb-2 text-sm sm:text-base">
+                <span class="font-medium text-gray-700">Visits Target</span>
+                <span class="font-bold text-purple-600">{{ monthly_visits }}/{{ target.target_visits }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 sm:h-3">
+                <div class="bg-gradient-to-r from-purple-500 to-purple-700 h-2 sm:h-3 rounded-full transition-all" style="width: {% widthratio monthly_visits target.target_visits 100 %}%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Follow-ups & Recent Activity - Mobile Optimized -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
+    <!-- Follow-ups Needed -->
+    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+        <h2 class="text-lg sm:text-xl font-bold text-zakcom-blue mb-4 flex items-center">
+            <i class="fas fa-bell text-zakcom-orange mr-2"></i>
+            Follow-ups
+        </h2>
+        <div class="space-y-3">
+            {% for visit in follow_ups %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 sm:p-4 rounded">
+                <div class="flex justify-between items-start gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-800 text-sm sm:text-base truncate">{{ visit.location }}</p>
+                        {% if visit.prospect %}
+                        <p class="text-xs sm:text-sm text-gray-700 mt-1">{{ visit.prospect.full_name }}</p>
+                        <p class="text-xs text-gray-600">{{ visit.prospect.phone }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-xs font-medium text-yellow-700">Due</p>
+                        <p class="text-xs sm:text-sm font-bold text-zakcom-blue whitespace-nowrap">{{ visit.follow_up_date|date:"M d" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-6 sm:py-8">
+                <i class="fas fa-check-circle text-green-500 text-3xl sm:text-4xl mb-2"></i>
+                <p class="text-sm sm:text-base text-gray-500">All caught up!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Visits -->
+    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg sm:text-xl font-bold text-zakcom-blue flex items-center">
+                <i class="fas fa-history text-zakcom-orange mr-2"></i>
+                Recent Visits
+            </h2>
+            <a href="{% url 'visit_list' %}" class="text-xs sm:text-sm text-zakcom-blue hover:text-zakcom-orange font-medium">View All →</a>
+        </div>
+        <div class="space-y-3 max-h-96 overflow-y-auto">
+            {% for visit in recent_visits|slice:":5" %}
+            <div class="border-l-4 {% if visit.outcome == 'closed_sale' %}border-green-500{% elif visit.outcome == 'interested' %}border-blue-500{% elif visit.outcome == 'not_interested' %}border-red-500{% else %}border-gray-400{% endif %} bg-gray-50 p-3 rounded">
+                <div class="flex justify-between items-start gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-800 text-sm sm:text-base truncate">{{ visit.location }}</p>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{{ visit.feedback|truncatewords:10 }}</p>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="far fa-calendar mr-1"></i>{{ visit.visit_date|date:"M d" }}
+                        </p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full flex-shrink-0 {% if visit.outcome == 'closed_sale' %}bg-green-100 text-green-800{% elif visit.outcome == 'interested' %}bg-blue-100 text-blue-800{% elif visit.outcome == 'not_interested' %}bg-red-100 text-red-800{% else %}bg-gray-200 text-gray-800{% endif %}">
+                        {{ visit.get_outcome_display|truncatewords:2 }}
+                    </span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">No visits recorded yet</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Sales - Mobile Optimized -->
+<div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg sm:text-xl font-bold text-zakcom-blue flex items-center">
+            <i class="fas fa-handshake text-zakcom-orange mr-2"></i>
+            Recent Sales
+        </h2>
+        <a href="{% url 'sale_list' %}" class="text-xs sm:text-sm text-zakcom-blue hover:text-zakcom-orange font-medium">View All →</a>
+    </div>
+    <div class="overflow-x-auto -mx-4 sm:mx-0">
+        <div class="inline-block min-w-full align-middle">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50 hidden sm:table-header-group">
+                    <tr>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Package</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for sale in recent_sales %}
+                    <!-- Desktop View -->
+                    <tr class="hover:bg-gray-50 hidden sm:table-row">
+                        <td class="px-3 sm:px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ sale.customer.full_name }}</div>
+                            <div class="text-xs sm:text-sm text-gray-500">{{ sale.customer.phone }}</div>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ sale.package.name }}</div>
+                            <div class="text-xs text-gray-500">{{ sale.package.speed }}</div>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4">
+                            <div class="text-sm font-semibold text-zakcom-orange">UGX {{ sale.total_value|floatformat:0 }}</div>
+                        </td>
+                        <td class="px-3 sm:px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded-full {% if sale.status == 'active' %}bg-green-100 text-green-800{% elif sale.status == 'installed' %}bg-blue-100 text-blue-800{% elif sale.status == 'approved' %}bg-yellow-100 text-yellow-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ sale.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+
+                    <!-- Mobile View -->
+                    <tr class="sm:hidden">
+                        <td colspan="4" class="px-4 py-3">
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold text-gray-900">{{ sale.customer.full_name }}</p>
+                                        <p class="text-xs text-gray-500">{{ sale.customer.phone }}</p>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs rounded-full {% if sale.status == 'active' %}bg-green-100 text-green-800{% elif sale.status == 'installed' %}bg-blue-100 text-blue-800{% elif sale.status == 'approved' %}bg-yellow-100 text-yellow-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ sale.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">{{ sale.package.name }} ({{ sale.package.speed }})</span>
+                                    <span class="font-semibold text-zakcom-orange">UGX {{ sale.total_value|floatformat:0 }}</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-4 sm:px-6 py-8 text-center text-gray-500 text-sm sm:text-base">No sales recorded yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions - Mobile Optimized -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <a href="{% url 'log_visit' %}" class="bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue hover:shadow-xl text-white rounded-lg p-4 sm:p-6 text-center transform hover:scale-105 transition">
+        <i class="fas fa-map-marker-alt text-3xl sm:text-4xl mb-2 sm:mb-3"></i>
+        <h3 class="text-base sm:text-lg font-bold">Log New Visit</h3>
+        <p class="text-xs sm:text-sm opacity-80 mt-1">Record customer visit</p>
+    </a>
+    <a href="{% url 'create_sale' %}" class="bg-gradient-to-r from-zakcom-orange to-orange-500 hover:shadow-xl text-white rounded-lg p-4 sm:p-6 text-center transform hover:scale-105 transition">
+        <i class="fas fa-plus-circle text-3xl sm:text-4xl mb-2 sm:mb-3"></i>
+        <h3 class="text-base sm:text-lg font-bold">Create Sale</h3>
+        <p class="text-xs sm:text-sm opacity-80 mt-1">Close a new deal</p>
+    </a>
+    <a href="{% url 'prospect_list' %}" class="bg-gradient-to-r from-purple-500 to-purple-700 hover:shadow-xl text-white rounded-lg p-4 sm:p-6 text-center transform hover:scale-105 transition sm:col-span-2 lg:col-span-1">
+        <i class="fas fa-users text-3xl sm:text-4xl mb-2 sm:mb-3"></i>
+        <h3 class="text-base sm:text-lg font-bold">View Prospects</h3>
+        <p class="text-xs sm:text-sm opacity-80 mt-1">Manage leads</p>
+    </a>
+</div>
+{% endblock %}

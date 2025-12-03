@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+
+{% block title %}Log Visit - Zakcom{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-zakcom-blue mb-2">
+            <i class="fas fa-map-marker-alt text-zakcom-orange mr-2"></i>
+            Log Customer Visit
+        </h1>
+        <p class="text-gray-600">Record details of your customer visit and feedback</p>
+    </div>
+
+    <!-- Display any messages -->
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg mb-2 {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Display form errors -->
+    {% if visit_form.errors %}
+    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+        <strong><i class="fas fa-exclamation-triangle mr-2"></i>Please correct the following errors:</strong>
+        <ul class="list-disc list-inside mt-2">
+            {% for field, errors in visit_form.errors.items %}
+                {% for error in errors %}
+                    <li><strong>{{ field }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Visit Information Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-zakcom-blue mb-4 border-b border-gray-200 pb-2">
+                <i class="fas fa-info-circle text-zakcom-orange mr-2"></i>
+                Visit Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Location / Area <span class="text-red-500">*</span>
+                    </label>
+                    {{ visit_form.location }}
+                    <p class="mt-1 text-xs text-gray-500">e.g., Kololo, ABC Apartments Block B</p>
+                    {% if visit_form.location.errors %}
+                        <p class="mt-1 text-xs text-red-500">{{ visit_form.location.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Visit Outcome <span class="text-red-500">*</span>
+                    </label>
+                    {{ visit_form.outcome }}
+                    {% if visit_form.outcome.errors %}
+                        <p class="mt-1 text-xs text-red-500">{{ visit_form.outcome.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Visit Date <span class="text-red-500">*</span>
+                    </label>
+                    {{ visit_form.visit_date }}
+                    {% if visit_form.visit_date.errors %}
+                        <p class="mt-1 text-xs text-red-500">{{ visit_form.visit_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Visit Time <span class="text-red-500">*</span>
+                    </label>
+                    {{ visit_form.visit_time }}
+                    {% if visit_form.visit_time.errors %}
+                        <p class="mt-1 text-xs text-red-500">{{ visit_form.visit_time.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Customer Feedback / Comments <span class="text-red-500">*</span>
+                </label>
+                {{ visit_form.feedback }}
+                <p class="mt-1 text-xs text-gray-500">What did the customer say? Record their concerns, interests, or reasons for not being interested</p>
+                {% if visit_form.feedback.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ visit_form.feedback.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Customer Concerns Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-zakcom-blue mb-4 border-b border-gray-200 pb-2">
+                <i class="fas fa-exclamation-circle text-zakcom-orange mr-2"></i>
+                Customer Concerns (Check all that apply)
+            </h2>
+
+            <div class="space-y-4">
+                <div class="flex items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition">
+                    {{ visit_form.price_concern }}
+                    <label for="id_price_concern" class="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
+                        <i class="fas fa-dollar-sign text-red-500 mr-2"></i>
+                        Price is too high / Budget concerns
+                    </label>
+                </div>
+
+                <div class="flex items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition">
+                    {{ visit_form.coverage_concern }}
+                    <label for="id_coverage_concern" class="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
+                        <i class="fas fa-signal text-yellow-500 mr-2"></i>
+                        Worried about coverage / speed in their area
+                    </label>
+                </div>
+
+                <div class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                    {{ visit_form.has_existing_provider }}
+                    <label for="id_has_existing_provider" class="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
+                        <i class="fas fa-handshake text-blue-500 mr-2"></i>
+                        Already has an internet provider
+                    </label>
+                </div>
+
+                <div id="existingProviderField" class="ml-8 hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Current Provider Name
+                    </label>
+                    {{ visit_form.existing_provider_name }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Prospect Information (Shows when interested) -->
+        <div id="prospectInfo" class="bg-white rounded-lg shadow-lg p-6 hidden">
+            <h2 class="text-xl font-bold text-zakcom-blue mb-4 border-b border-gray-200 pb-2">
+                <i class="fas fa-user-plus text-zakcom-orange mr-2"></i>
+                Prospect Details
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">
+                <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                <strong>Optional:</strong> Fill this if you want to save prospect information for follow-up
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name
+                    </label>
+                    <input type="text" name="full_name" id="id_full_name"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent"
+                           placeholder="Enter full name">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                    </label>
+                    <input type="text" name="phone" id="id_phone"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent"
+                           placeholder="0700000000">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email (Optional)
+                    </label>
+                    <input type="email" name="email" id="id_email"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent"
+                           placeholder="email@example.com">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Interest Level
+                    </label>
+                    <select name="interest_level" id="id_interest_level"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent">
+                        <option value="interested">Interested</option>
+                        <option value="very_interested">Very Interested</option>
+                        <option value="neutral">Neutral</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Specific Location
+                    </label>
+                    <input type="text" name="prospect_location" id="id_prospect_location"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent"
+                           placeholder="Specific location">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Preferred Package
+                    </label>
+                    <select name="preferred_package" id="id_preferred_package"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent">
+                        <option value="">-- Select Package --</option>
+                        {{ prospect_form.preferred_package }}
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Address
+                    </label>
+                    <textarea name="address" id="id_address" rows="3"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent"
+                              placeholder="Full address"></textarea>
+                </div>
+            </div>
+
+            <p class="mt-4 text-xs text-gray-500 italic">
+                Note: If you leave prospect fields empty, only the visit will be saved (which is fine!)
+            </p>
+        </div>
+
+        <!-- Follow-up Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-zakcom-blue mb-4 border-b border-gray-200 pb-2">
+                <i class="fas fa-calendar-check text-zakcom-orange mr-2"></i>
+                Follow-up (Optional)
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Follow-up Date
+                    </label>
+                    {{ visit_form.follow_up_date }}
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Follow-up Notes
+                    </label>
+                    {{ visit_form.follow_up_notes }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'sales_dashboard' %}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </a>
+            <button type="submit" class="px-8 py-3 bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue text-white rounded-lg hover:shadow-lg font-medium transition transform hover:scale-105">
+                <i class="fas fa-save mr-2"></i>Save Visit
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Show/hide existing provider field
+document.getElementById('id_has_existing_provider').addEventListener('change', function() {
+    const field = document.getElementById('existingProviderField');
+    if (this.checked) {
+        field.classList.remove('hidden');
+    } else {
+        field.classList.add('hidden');
+    }
+});
+
+// Show/hide prospect information based on outcome
+document.getElementById('id_outcome').addEventListener('change', function() {
+    const prospectInfo = document.getElementById('prospectInfo');
+    const interestedOutcomes = ['interested', 'follow_up', 'closed_sale'];
+
+    if (interestedOutcomes.includes(this.value)) {
+        prospectInfo.classList.remove('hidden');
+    } else {
+        prospectInfo.classList.add('hidden');
+    }
+});
+
+// Set current date and time as default
+window.onload = function() {
+    const today = new Date().toISOString().split('T')[0];
+    const now = new Date().toTimeString().split(' ')[0].slice(0,5);
+
+    // Always set current date and time automatically
+    document.getElementById('id_visit_date').value = today;
+    document.getElementById('id_visit_time').value = now;
+
+    // Make time field read-only so it updates automatically
+    document.getElementById('id_visit_time').setAttribute('readonly', 'readonly');
+    document.getElementById('id_visit_time').style.backgroundColor = '#f3f4f6';
+    document.getElementById('id_visit_time').style.cursor = 'not-allowed';
+
+    // Check initial state on page load
+    const outcomeField = document.getElementById('id_outcome');
+    if (outcomeField) {
+        const event = new Event('change');
+        outcomeField.dispatchEvent(event);
+    }
+};
+
+// Update time every second to keep it current
+setInterval(function() {
+    const now = new Date().toTimeString().split(' ')[0].slice(0,5);
+    document.getElementById('id_visit_time').value = now;
+}, 1000);
+</script>
+{% endblock %}

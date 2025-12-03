@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Sale - Zakcom{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-zakcom-blue mb-2">
+            <i class="fas fa-handshake text-zakcom-orange mr-2"></i>
+            Create New Sale
+        </h1>
+        <p class="text-gray-600">Close a deal and register a new customer</p>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Customer Information Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-zakcom-blue mb-4 border-b border-gray-200 pb-2">
+                <i class="fas fa-user text-zakcom-orange mr-2"></i>
+                Customer Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name <span class="text-red-500">*</span>
+                    </label>
+                    {{ customer_form.full_name }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number <span class="text-red-500">*</span>
+                    </label>
+                    {{ customer_form.phone }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                    </label>
+                    {{ customer_form.email }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        ID Number
+                    </label>
+                    {{ customer_form.id_number }}
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Installation Address <span class="text-red-500">*</span>
+                    </label>
+                    {{ customer_form.address }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Package Selection Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-zakcom-blue mb-4 border-b border-gray-200 pb-2">
+                <i class="fas fa-wifi text-zakcom-orange mr-2"></i>
+                Internet Package
+            </h2>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                    Select Package <span class="text-red-500">*</span>
+                </label>
+
+                <!-- Package Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% for package in packages %}
+                    <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-zakcom-orange cursor-pointer transition package-card">
+                        <input type="radio" name="package" value="{{ package.id }}" id="pkg_{{ package.id }}" class="hidden package-radio">
+                        <label for="pkg_{{ package.id }}" class="cursor-pointer">
+                            <div class="text-center">
+                                <h3 class="text-lg font-bold text-zakcom-blue">{{ package.name }}</h3>
+                                <div class="my-3">
+                                    <i class="fas fa-wifi text-zakcom-orange text-3xl"></i>
+                                </div>
+                                <p class="text-2xl font-bold text-gray-800 mb-1">{{ package.speed }}</p>
+                                <p class="text-zakcom-orange font-semibold">UGX {{ package.monthly_price|floatformat:0 }}/mo</p>
+                                <p class="text-xs text-gray-500 mt-2">Installation: UGX {{ package.installation_fee|floatformat:0 }}</p>
+                            </div>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Contract Duration (months) <span class="text-red-500">*</span>
+                    </label>
+                    {{ sale_form.contract_duration }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Sale Date <span class="text-red-500">*</span>
+                    </label>
+                    {{ sale_form.sale_date }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Installation Details Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-zakcom-blue mb-4 border-b border-gray-200 pb-2">
+                <i class="fas fa-tools text-zakcom-orange mr-2"></i>
+                Installation & Status
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Status <span class="text-red-500">*</span>
+                    </label>
+                    {{ sale_form.status }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Installation Date
+                    </label>
+                    {{ sale_form.installation_date }}
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Notes
+                    </label>
+                    {{ sale_form.notes }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sale Summary -->
+        <div class="bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue rounded-lg shadow-lg p-6 text-white">
+            <h2 class="text-xl font-bold mb-4">
+                <i class="fas fa-calculator mr-2"></i>
+                Sale Summary
+            </h2>
+            <div class="space-y-2" id="saleSummary">
+                <p class="text-sm opacity-80">Select a package to see pricing details</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'sales_dashboard' %}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </a>
+            <button type="submit" class="px-8 py-3 bg-gradient-to-r from-zakcom-orange to-orange-500 text-white rounded-lg hover:shadow-lg font-medium transition transform hover:scale-105">
+                <i class="fas fa-check-circle mr-2"></i>Create Sale
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Package data
+const packages = {
+    {% for package in packages %}
+    {{ package.id }}: {
+        name: '{{ package.name }}',
+        speed: '{{ package.speed }}',
+        monthly: {{ package.monthly_price }},
+        installation: {{ package.installation_fee }}
+    },
+    {% endfor %}
+};
+
+// Handle package selection styling
+document.querySelectorAll('.package-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.package-card').forEach(c => {
+            c.classList.remove('border-zakcom-orange', 'bg-orange-50');
+            c.classList.add('border-gray-200');
+        });
+        this.classList.remove('border-gray-200');
+        this.classList.add('border-zakcom-orange', 'bg-orange-50');
+
+        const radio = this.querySelector('.package-radio');
+        radio.checked = true;
+        updateSummary();
+    });
+});
+
+// Update sale summary
+function updateSummary() {
+    const selectedPackage = document.querySelector('input[name="package"]:checked');
+    const duration = document.getElementById('id_contract_duration').value || 12;
+    const summaryDiv = document.getElementById('saleSummary');
+
+    if (selectedPackage && packages[selectedPackage.value]) {
+        const pkg = packages[selectedPackage.value];
+        const monthlyTotal = pkg.monthly * duration;
+        const grandTotal = monthlyTotal + pkg.installation;
+
+        summaryDiv.innerHTML = `
+            <div class="flex justify-between"><span>Package:</span><span class="font-bold">${pkg.name} (${pkg.speed})</span></div>
+            <div class="flex justify-between"><span>Monthly Fee:</span><span class="font-bold">UGX ${pkg.monthly.toLocaleString()}</span></div>
+            <div class="flex justify-between"><span>Contract Duration:</span><span class="font-bold">${duration} months</span></div>
+            <div class="flex justify-between"><span>Total Monthly Fees:</span><span class="font-bold">UGX ${monthlyTotal.toLocaleString()}</span></div>
+            <div class="flex justify-between"><span>Installation Fee:</span><span class="font-bold">UGX ${pkg.installation.toLocaleString()}</span></div>
+            <div class="border-t border-white border-opacity-30 mt-3 pt-3"></div>
+            <div class="flex justify-between text-lg"><span>Grand Total:</span><span class="font-bold">UGX ${grandTotal.toLocaleString()}</span></div>
+        `;
+    }
+}
+
+document.getElementById('id_contract_duration').addEventListener('input', updateSummary);
+
+// Set current date as default
+window.onload = function() {
+    const today = new Date().toISOString().split('T')[0];
+    if (!document.getElementById('id_sale_date').value) {
+        document.getElementById('id_sale_date').value = today;
+    }
+};
+</script>
+{% endblock %}

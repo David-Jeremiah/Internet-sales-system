@@ -1,0 +1,138 @@
+<!-- templates/sales/sale_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}All Sales - Zakcom{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-zakcom-blue mb-2">
+        <i class="fas fa-file-invoice-dollar text-zakcom-orange mr-2"></i>
+        All Sales
+    </h1>
+    <p class="text-gray-600">View and manage all sales transactions</p>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+    <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent">
+                <option value="">All Status</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <input type="date" name="date_from" value="{{ request.GET.date_from }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <input type="date" name="date_to" value="{{ request.GET.date_to }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zakcom-blue focus:border-transparent">
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="w-full px-4 py-2 bg-zakcom-blue text-white rounded-lg hover:bg-zakcom-light-blue transition">
+                <i class="fas fa-filter mr-2"></i>Filter
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Sales Table -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue text-white">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sale Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Package</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sales Person</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Total Value</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Installation</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for sale in sales %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ sale.sale_date }}</div>
+                        <div class="text-xs text-gray-500">{{ sale.created_at|date:"M d, Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">{{ sale.customer.full_name }}</div>
+                        <div class="text-sm text-gray-500">{{ sale.customer.phone }}</div>
+                        <div class="text-xs text-gray-400">{{ sale.customer.address|truncatewords:5 }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-zakcom-blue">{{ sale.package.name }}</div>
+                        <div class="text-sm text-gray-500">{{ sale.package.speed }}</div>
+                        <div class="text-xs text-gray-400">{{ sale.contract_duration }} months</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="bg-zakcom-blue text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold mr-2">
+                                {{ sale.sales_person.username|slice:":1"|upper }}
+                            </div>
+                            <span class="text-sm text-gray-900">{{ sale.sales_person.username }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-zakcom-orange">UGX {{ sale.total_value|floatformat:0 }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs rounded-full
+                            {% if sale.status == 'active' %}bg-green-100 text-green-800
+                            {% elif sale.status == 'installed' %}bg-blue-100 text-blue-800
+                            {% elif sale.status == 'approved' %}bg-yellow-100 text-yellow-800
+                            {% elif sale.status == 'pending' %}bg-gray-100 text-gray-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ sale.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if sale.installation_date %}
+                        <div class="text-sm text-gray-900">{{ sale.installation_date }}</div>
+                        {% else %}
+                        <span class="text-xs text-gray-400">Not scheduled</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No sales found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div class="bg-gradient-to-br from-zakcom-blue to-zakcom-light-blue rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-sm opacity-80 mb-2">Total Sales</h3>
+        <p class="text-4xl font-bold">{{ sales.count }}</p>
+    </div>
+    <div class="bg-gradient-to-br from-zakcom-orange to-orange-500 rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-sm opacity-80 mb-2">Total Revenue</h3>
+        <p class="text-3xl font-bold">UGX {{ total_revenue|floatformat:0 }}</p>
+    </div>
+    <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-sm opacity-80 mb-2">Active Customers</h3>
+        <p class="text-4xl font-bold">{{ sales|length }}</p>
+    </div>
+</div>
+
+<div class="mt-6 text-center">
+    <a href="{% url 'create_sale' %}" class="inline-block px-6 py-3 bg-gradient-to-r from-zakcom-orange to-orange-500 text-white rounded-lg hover:shadow-lg transition transform hover:scale-105">
+        <i class="fas fa-plus-circle mr-2"></i>Create New Sale
+    </a>
+</div>
+{% endblock %}

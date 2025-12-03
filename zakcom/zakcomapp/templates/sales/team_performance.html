@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Team Performance - Zakcom{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-zakcom-blue mb-2">
+        <i class="fas fa-users text-zakcom-orange mr-2"></i>
+        Team Performance
+    </h1>
+    <p class="text-gray-600">Detailed performance metrics for all sales team members</p>
+</div>
+
+<!-- Performance Table -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gradient-to-r from-zakcom-blue to-zakcom-light-blue text-white">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sales Person</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Total Sales</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Monthly Sales</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Total Revenue</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Monthly Revenue</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Total Visits</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Monthly Visits</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Conversion Rate</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for stat in team_stats %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="bg-zakcom-blue text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mr-3">
+                                {{ stat.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {% if stat.first_name and stat.last_name %}
+                                        {{ stat.first_name }} {{ stat.last_name }}
+                                    {% else %}
+                                        {{ stat.username }}
+                                    {% endif %}
+                                </div>
+                                <div class="text-sm text-gray-500">@{{ stat.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-gray-900">{{ stat.total_sales }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-bold text-zakcom-blue">{{ stat.monthly_sales }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">UGX {{ stat.total_revenue|floatformat:0 }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-zakcom-orange">UGX {{ stat.monthly_revenue|floatformat:0 }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ stat.total_visits }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-purple-600">{{ stat.monthly_visits }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="text-sm font-bold text-green-600 mr-2">{{ stat.conversion_rate }}%</div>
+                            <div class="w-16 bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: {{ stat.conversion_rate }}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-users text-4xl mb-2"></i>
+                        <p>No team members found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Performance Insights -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-lg font-bold mb-2">
+            <i class="fas fa-star mr-2"></i>Top Performer
+        </h3>
+        {% if team_stats %}
+            {% with top=team_stats.0 %}
+                {% if top.monthly_revenue > 0 %}
+                    <p class="text-2xl font-bold">
+                        {% if top.first_name and top.last_name %}
+                            {{ top.first_name }} {{ top.last_name }}
+                        {% else %}
+                            {{ top.username }}
+                        {% endif %}
+                    </p>
+                    <p class="text-sm opacity-80">UGX {{ top.monthly_revenue|floatformat:0 }} this month</p>
+                {% else %}
+                    <p class="text-sm opacity-80">No sales yet this month</p>
+                {% endif %}
+            {% endwith %}
+        {% else %}
+            <p class="text-sm opacity-80">No data yet</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-gradient-to-br from-zakcom-blue to-zakcom-light-blue rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-lg font-bold mb-2">
+            <i class="fas fa-walking mr-2"></i>Most Active
+        </h3>
+        {% if team_stats %}
+            {% with most_visits=team_stats|dictsort:"monthly_visits"|last %}
+                {% if most_visits.monthly_visits > 0 %}
+                    <p class="text-2xl font-bold">
+                        {% if most_visits.first_name and most_visits.last_name %}
+                            {{ most_visits.first_name }} {{ most_visits.last_name }}
+                        {% else %}
+                            {{ most_visits.username }}
+                        {% endif %}
+                    </p>
+                    <p class="text-sm opacity-80">{{ most_visits.monthly_visits }} visits this month</p>
+                {% else %}
+                    <p class="text-sm opacity-80">No visits yet this month</p>
+                {% endif %}
+            {% endwith %}
+        {% else %}
+            <p class="text-sm opacity-80">No data yet</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-gradient-to-br from-zakcom-orange to-orange-500 rounded-lg shadow-lg p-6 text-white">
+        <h3 class="text-lg font-bold mb-2">
+            <i class="fas fa-percentage mr-2"></i>Best Conversion
+        </h3>
+        {% if team_stats %}
+            {% with best_conversion=team_stats|dictsort:"conversion_rate"|last %}
+                {% if best_conversion.conversion_rate > 0 %}
+                    <p class="text-2xl font-bold">
+                        {% if best_conversion.first_name and best_conversion.last_name %}
+                            {{ best_conversion.first_name }} {{ best_conversion.last_name }}
+                        {% else %}
+                            {{ best_conversion.username }}
+                        {% endif %}
+                    </p>
+                    <p class="text-sm opacity-80">{{ best_conversion.conversion_rate }}% conversion rate</p>
+                {% else %}
+                    <p class="text-sm opacity-80">No conversions yet this month</p>
+                {% endif %}
+            {% endwith %}
+        {% else %}
+            <p class="text-sm opacity-80">No data yet</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
